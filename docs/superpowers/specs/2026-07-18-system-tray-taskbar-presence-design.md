@@ -178,8 +178,12 @@ the returned action, and updates the latch.
   `keepLibraryWindowInBackgroundOnReaderClose` / `isMinimized → restore` /
   **`!isVisible → close`** / `show` block. The `!isVisible → close` branch is the one that
   would otherwise destroy the library on a non-last reader close now that the library is
-  hidden while readers are open. The reader-bounds-copy logic is retained for all
-  platforms.
+  hidden while readers are open. (The reader-bounds-copy logic this section previously
+  mentioned as "retained" no longer exists: PR #3752, merged into this branch on
+  2026-08-05, deleted the reader attach/detach feature — `ReaderMode`,
+  `detachModeRequest`/`detachModeSuccess`, `readerNewWindowBound`, and the `winClose` block
+  that copied the closing reader's bounds onto the library window on
+  `ReaderMode.Detached`. There is nothing bounds-related left to preserve here.)
 - **`src/main/redux/sagas/reader.ts`** (`readerCLoseRequestFromIdentifier`) — when the
   setting is ON, replace the unconditional `libWin.show()` with `decide("readerClosed")`.
 - **`src/main/redux/sagas/event.ts` and `src/main/cli/`** — mark direct opens as

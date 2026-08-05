@@ -241,7 +241,7 @@ export const AnnotationList: React.FC<{ /*annotationUUIDFocused: string, resetAn
         <>
             <div className={stylesAnnotations.annotations_filter_line}>
                 <div style={{ display: "flex", gap: "10px" }}>
-                    <Popover.Root open={sortingOpen} onOpenChange={(open) => setSortingOpen(open)}>
+                    <Popover.Root modal open={sortingOpen} onOpenChange={(open) => setSortingOpen(open)}>
                         <Popover.Trigger asChild>
                             <button aria-label={__("reader.annotations.sorting.sortingOptions")} className={stylesAnnotations.annotations_filter_trigger_button}
                                 title={__("reader.annotations.sorting.sortingOptions")}>
@@ -279,7 +279,7 @@ export const AnnotationList: React.FC<{ /*annotationUUIDFocused: string, resetAn
                             </Popover.Content>
                         </Popover.Portal>
                     </Popover.Root>
-                    <Popover.Root open={filterOpen} onOpenChange={(open) => setFilterOpen(open)}>
+                    <Popover.Root modal open={filterOpen} onOpenChange={(open) => setFilterOpen(open)}>
                         <Popover.Trigger asChild>
                             <button aria-label={__("reader.annotations.filter.filterOptions")} className={stylesAnnotations.annotations_filter_trigger_button}
                                 title={__("reader.annotations.filter.filterOptions")}>
@@ -481,7 +481,7 @@ export const AnnotationList: React.FC<{ /*annotationUUIDFocused: string, resetAn
                             </button>
                         </ImportAnnotationsDialog>
 
-                    <Popover.Root>
+                    <Popover.Root modal>
                             <Popover.Trigger asChild>
                                 <button className={stylesAnnotations.annotations_filter_trigger_button} disabled={!annotationListFiltered.length}
                                     title={__("catalog.exportAnnotation")}
@@ -506,9 +506,14 @@ export const AnnotationList: React.FC<{ /*annotationUUIDFocused: string, resetAn
                                                 ref={annotationTitleRef}
                                                 className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE"
                                             />
-                                            <select defaultValue="annotation" style={{ height: "inherit", border: "none", marginLeft: "5px" }} ref={selectFileTypeRef} name="file_type">
-                                                <option value="annotation">.annotation</option>
-                                                <option value="html">.html</option>
+                                        </div>
+                                        <div className={stylesInputs.form_group}>
+                                        <label htmlFor="file_type">
+                                            {__("catalog.format")}
+                                            </label>
+                                        <select defaultValue="annotation" ref={selectFileTypeRef} name="file_type">
+                                                <option value="annotation">{__("reader.marks.annotationsReadium")}</option>
+                                                <option value="html">HTML</option>
                                             </select>
                                         </div>
 
@@ -563,7 +568,7 @@ export const AnnotationList: React.FC<{ /*annotationUUIDFocused: string, resetAn
                         </AlertDialog.Portal>
                     </AlertDialog.Root>
                     <span style={{height: "30px", width: "2px", borderRight: "2px solid var(--color-gray-50"}}></span>
-                    <Popover.Root open={optionsOpen} onOpenChange={(open) => setOptionsOpen(open)}>
+                    <Popover.Root modal open={optionsOpen} onOpenChange={(open) => setOptionsOpen(open)}>
                         <Popover.Trigger className={stylesAnnotations.annotations_filter_trigger_button} title={__("reader.annotations.annotationsOptions")} aria-label={__("reader.annotations.annotationsOptions")}>
                             <SVG ariaHidden svg={OptionsIcon} />
                         </Popover.Trigger>
@@ -598,9 +603,9 @@ export const AnnotationList: React.FC<{ /*annotationUUIDFocused: string, resetAn
                                                 <></>
                                             }
                                         </div>
-                                        <div aria-hidden>
-                                            <h3>{__("reader.annotations.advancedMode")}</h3>
-                                        </div>
+                                        <span aria-hidden>
+                                            {__("reader.annotations.advancedMode")}
+                                        </span>
                                     </label>
                                 </div>
                                 {/* : <></>} */}
@@ -634,7 +639,10 @@ export const AnnotationList: React.FC<{ /*annotationUUIDFocused: string, resetAn
                                                 :
                                                 <></>
                                             } </div>
-                                        <h3 aria-hidden>{__("reader.annotations.quickAnnotations")}</h3></label>
+                                            <span aria-hidden>
+                                            {__("reader.annotations.quickAnnotations")}
+                                        </span>
+                                    </label>
                                 </div>
                                 {!isPdf ?
                                     <div className={stylesAnnotations.annotations_checkbox}>
@@ -666,7 +674,10 @@ export const AnnotationList: React.FC<{ /*annotationUUIDFocused: string, resetAn
                                                     <></>
                                                 }
                                             </div>
-                                            <h3 aria-hidden>{__("reader.annotations.toggleMarginMarks")}</h3></label>
+                                            <span aria-hidden>
+                                                {__("reader.annotations.toggleMarginMarks")}
+                                            </span>
+                                        </label>
                                     </div> : <></>}
                                 <div className={stylesAnnotations.annotations_checkbox}>
                                     <input type="checkbox" id="hideAnnotation" name="hideAnnotation" className={stylesGlobal.checkbox_custom_input} checked={readerConfig.annotation_defaultDrawView === "hide"} onChange={hideAnnotationOnChange} />
@@ -697,7 +708,10 @@ export const AnnotationList: React.FC<{ /*annotationUUIDFocused: string, resetAn
                                                 <></>
                                             }
                                         </div>
-                                        <h3 aria-hidden>{__("reader.annotations.hide")}</h3></label>
+                                        <span aria-hidden>
+                                            {__("reader.annotations.hide")}
+                                        </span>
+                                    </label>
                                 </div>
                                 <Popover.Arrow className={stylesDropDown.PopoverArrow} aria-hidden style={{ fill: "var(--color-gray-50" }} />
                             </Popover.Content>

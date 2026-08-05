@@ -759,6 +759,7 @@
         },
         "marks": {
             "annotations": "Oharrak",
+            "annotationsReadium": "Oharrak (Readium)",
             "bookmarks": "Markatzaileak",
             "delete": "Ezabatu",
             "edit": "Editatu",
@@ -1209,6 +1210,10 @@
                     "name": ""
                 },
                 "ToggleReaderFullscreen": {
+                    "description": "",
+                    "name": ""
+                },
+                "ToggleReaderZenMode": {
                     "description": "",
                     "name": ""
                 },

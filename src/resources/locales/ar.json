@@ -718,7 +718,7 @@
                 "description": "تسمية الملاحظات المصدَّرة:",
                 "title": "العنوان"
             },
-            "annotationsOptions": "‪خيارات التعليق",
+            "annotationsOptions": "خيارات التعليق",
             "date": "تاريخ التعديل",
             "error": {
                 "pdf": {
@@ -779,6 +779,7 @@
         },
         "marks": {
             "annotations": "التعليقات",
+            "annotationsReadium": "(Readium) التعليقات",
             "bookmarks": "الإشارات المرجعية",
             "delete": "حذف",
             "edit": "تحرير",
@@ -1235,6 +1236,10 @@
                 "ToggleReaderFullscreen": {
                     "description": "في نافذة القارئ، تفعيل وضع ملء الشاشة للنظام أو استعد الوضع العادي للنافذة. لاحظ أن هذا يختلف عن \"وضع zen\" الذي يبسط واجهة المستخدم",
                     "name": "تبديل وضع ملء الشاشة"
+                },
+                "ToggleReaderZenMode": {
+                    "description": "",
+                    "name": ""
                 },
                 "ToggleScreenReaderOptimize": {
                     "description": "",

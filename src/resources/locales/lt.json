@@ -43,7 +43,7 @@
         "update": {
             "message": "Prieinama nauja versija, paspauskite, jei norite sužinoti daugiau.",
             "title": "{{- appName}} programinės įrangos naujinys.",
-            "whatsnew": ""
+            "whatsnew": "Įdiegta nauja versija, spustelėkite, jei norite sužinoti daugiau"
         },
         "window": {
             "showLibrary": "Rodyti biblioteką / lentyną",
@@ -769,6 +769,7 @@
         },
         "marks": {
             "annotations": "Pastabos",
+            "annotationsReadium": "Pastabos (Readium)",
             "bookmarks": "Skirtukai",
             "delete": "Šalinti",
             "edit": "Keisti",
@@ -1224,9 +1225,13 @@
                     "description": "Skaitytuvės lange įjungti sistemos viso ekrano režimą arba atkurti įprastą lango režimą. Atkreipkite dėmesį, jog tai skiriasi nuo „zen“ režimo, kuris supaprastina naudotojo sąsają",
                     "name": "Perjungti viso ekrano režimą"
                 },
-                "ToggleScreenReaderOptimize": {
+                "ToggleReaderZenMode": {
                     "description": "",
                     "name": ""
+                },
+                "ToggleScreenReaderOptimize": {
+                    "description": "Bibliotekos lange perjungti optimizuotą ekrano skaitytuvų palaikymą",
+                    "name": "Perjungti ekrano skaitytuvų optimizacijas"
                 }
             },
             "loadUserJson": "Įkelti iš naudotojo failo",
@@ -1258,8 +1263,8 @@
             "version": "Versija: {{- version}}"
         },
         "screenReaderActivate": {
-            "help": "Kai programa aptinka naudojamas pagalbines technologijas, vartotojo sąsaja geriau veikia su ekrano skaitytuvais",
-            "invite": "",
+            "help": "Kai programa aptinka naudojamas pagalbines technologijas, naudotojo sąsaja geriau veikia su ekrano skaitytuvais",
+            "invite": "Optimizuoti ekrano skaitytuvams ({{- status}}) [{{- keyboard}}]",
             "message": "Patobulintas ekrano skaitytuvų palaikymas",
             "title": "Pagerinkite ekrano skaitytuvo patirtį"
         },

@@ -759,6 +759,7 @@
         },
         "marks": {
             "annotations": "Annotations",
+            "annotationsReadium": "Readium Annotations",
             "bookmarks": "Bookmarks",
             "delete": "Delete",
             "edit": "Edit",
@@ -1212,9 +1213,13 @@
                     "description": "In the reader window, activate system fullscreen or restore normal window mode. Note that this is different from 'zen mode' which simplifies the user interface",
                     "name": "Toggle Fullscreen"
                 },
+                "ToggleReaderZenMode": {
+                    "description": "In the reader window, activate or exit zen mode, which simplifies the user interface while reading",
+                    "name": "Toggle Zen mode"
+                },
                 "ToggleScreenReaderOptimize": {
                     "description": "In the library window, toggle optimized support for screen readers",
-                    "name": "Toggle Screen Reader Optimizations"
+                    "name": "Toggle screen reader optimizations"
                 }
             },
             "loadUserJson": "Load from user file",

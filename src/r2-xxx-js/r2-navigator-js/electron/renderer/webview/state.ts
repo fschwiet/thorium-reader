@@ -41,6 +41,9 @@ export interface IReadiumElectronWebviewWindowState {
     fxlViewportWidth: number;
     fxlViewportHeight: number;
     fxlViewportScale: number;
+    fxlViewportTX: number;
+    fxlViewportTY: number;
+
     fxlZoomPercent: number; // fixedLayoutZoomPercent
 
     webViewSlot: WebViewSlotEnum;
@@ -89,6 +92,15 @@ export interface IReadiumElectronWebviewState {
     highlights: IHighlight[] | undefined;
 
     DOMisReady?: boolean;
+
+    isFixedLayout?: boolean;
+    fxlViewportWidth?: number;
+    fxlViewportHeight?: number;
+    fxlViewportScale?: number;
+    fxlViewportTX?: number;
+    fxlViewportTY?: number;
+
+    webViewSlot?: WebViewSlotEnum;
 }
 export interface IReadiumElectronWebview extends Electron.WebviewTag {
     READIUM2: IReadiumElectronWebviewState;

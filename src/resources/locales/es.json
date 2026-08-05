@@ -764,6 +764,7 @@
         },
         "marks": {
             "annotations": "Anotaciones",
+            "annotationsReadium": "Anotaciones (Readium)",
             "bookmarks": "Marcadores",
             "delete": "Eliminar",
             "edit": "Editar",
@@ -1217,6 +1218,10 @@
                 "ToggleReaderFullscreen": {
                     "description": "En la ventana del lector, activa el modo de pantalla completa del sistema o vuelve al modo de ventana normal. Ten en cuenta que esto es diferente del «modo zen», que simplifica la interfaz de usuario",
                     "name": "Pantalla completa"
+                },
+                "ToggleReaderZenMode": {
+                    "description": "",
+                    "name": ""
                 },
                 "ToggleScreenReaderOptimize": {
                     "description": "",

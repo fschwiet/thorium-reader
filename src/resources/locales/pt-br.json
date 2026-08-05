@@ -764,6 +764,7 @@
         },
         "marks": {
             "annotations": "Anotações",
+            "annotationsReadium": "Anotações (Readium)",
             "bookmarks": "Marcadores",
             "delete": "Apagar",
             "edit": "Editar",
@@ -1217,6 +1218,10 @@
                 "ToggleReaderFullscreen": {
                     "description": "Na janela do leitor, ativar a tela cheia do sistema ou restaurar o modo normal. Note que isso é diferente do 'modo Zen' que simplifica a interface do usuário",
                     "name": "Ativar/desativar Tela Cheia"
+                },
+                "ToggleReaderZenMode": {
+                    "description": "",
+                    "name": ""
                 },
                 "ToggleScreenReaderOptimize": {
                     "description": "",

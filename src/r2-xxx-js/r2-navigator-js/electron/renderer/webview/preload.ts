@@ -53,6 +53,7 @@ import {
     IEventPayload_R2_EVENT_TTS_MEDIAOVERLAYS_MANUAL_PLAY_NEXT,
     IEventPayload_R2_EVENT_TTS_HIGHLIGHT_STYLE,
     R2_EVENT_TTS_HIGHLIGHT_STYLE,
+    ENABLE_NAVIGATOR_R2_EVENT_IMAGE_CLICK,
     // R2_EVENT_DISABLE_TEMPORARY_NAV_TARGET_OUTLINE,
     // IEventPayload_R2_EVENT_DISABLE_TEMPORARY_NAV_TARGET_OUTLINE,
 } from "../../common/events";
@@ -82,7 +83,7 @@ import { uniqueCssSelector } from "../common/cssselector3";
 
 import { getDirection, getLanguage, normalizeText } from "../common/dom-text-utils";
 import { easings } from "../common/easings";
-import { closePopupDialogs, isPopupDialogOpen } from "../common/popup-dialog";
+import { closePopupDialogs, isPopupDialogOpen } from "./popup-dialog";
 import { getURLQueryParams } from "../common/querystring";
 import { IRect, getClientRectsNoOverlap, DOMRectListToArray } from "../common/rect-utils";
 import {
@@ -152,6 +153,8 @@ win.READIUM2 = {
     // dialogs = [],
     fxlViewportHeight: 0,
     fxlViewportScale: 1,
+    fxlViewportTX: 0,
+    fxlViewportTY: 0,
     fxlViewportWidth: 0,
     fxlZoomPercent: 0,
     hashElement: null,
@@ -2231,6 +2234,7 @@ win.addEventListener("DOMContentLoaded", () => {
     }
 
     if (readiumcssJson) {
+        debug("readiumcssJson::=", JSON.stringify(readiumcssJson, null, 4));
         win.READIUM2.isFixedLayout = (typeof readiumcssJson.isFixedLayout !== "undefined") ?
             readiumcssJson.isFixedLayout : false;
     }
@@ -2265,22 +2269,32 @@ win.addEventListener("DOMContentLoaded", () => {
     // testReadiumCSS(readiumcssJson);
 
     // innerWidth/Height can be zero at this rendering stage! :(
-    const w = (readiumcssJson && readiumcssJson.fixedLayoutWebViewWidth) || win.innerWidth;
-    const h = (readiumcssJson && readiumcssJson.fixedLayoutWebViewHeight) || win.innerHeight;
+    const w = (readiumcssJson && readiumcssJson.fixedLayoutAvailableWebViewWidth) || win.innerWidth;
+    const h = (readiumcssJson && readiumcssJson.fixedLayoutAvailableWebViewHeight) || win.innerHeight;
     win.READIUM2.fxlZoomPercent = (readiumcssJson && readiumcssJson.fixedLayoutZoomPercent) || 0;
+
+    debug("configureFixedLayout...(DOMContentLoaded)", readiumcssJson?.fixedLayoutAvailableWebViewWidth, win.innerWidth, readiumcssJson?.fixedLayoutAvailableWebViewHeight, win.innerHeight);
     const wh = configureFixedLayout(win.document, win.READIUM2.isFixedLayout,
         win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight,
         w, h, win.READIUM2.webViewSlot, win.READIUM2.fxlZoomPercent);
-    if (wh) {
+    if (wh && win.READIUM2.isFixedLayout) {
         win.READIUM2.fxlViewportWidth = wh.width;
         win.READIUM2.fxlViewportHeight = wh.height;
         win.READIUM2.fxlViewportScale = wh.scale;
+        win.READIUM2.fxlViewportTX = wh.tx;
+        win.READIUM2.fxlViewportTY = wh.ty;
 
         const payload: IEventPayload_R2_EVENT_FXL_CONFIGURE = {
             fxl: wh,
         };
         ipcRenderer.sendToHost(R2_EVENT_FXL_CONFIGURE, payload);
     } else {
+        win.READIUM2.fxlViewportWidth = 0;
+        win.READIUM2.fxlViewportHeight = 0;
+        win.READIUM2.fxlViewportScale = 1;
+        win.READIUM2.fxlViewportTX = 0;
+        win.READIUM2.fxlViewportTY = 0;
+
         const payload: IEventPayload_R2_EVENT_FXL_CONFIGURE = {
             fxl: null,
         };
@@ -3176,6 +3190,38 @@ function loaded(forced: boolean) {
 
                     href_src = href_src.replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ").trim();
                     href_src = href_src.replace(/<desc[^<]+<\/desc>/g, "");
+
+                    // SVG SCRIPT SECURITY NOTE: the Javascript is inert when the SVG fragment is rendered via an `img` HTML image tag (as is the case here),
+                    // but the Javascript WILL EXECUTE when the SVG is embedded directly in the HTML markup or via an `object`, or `embed` or `iframe` tag!
+                    // Uncomment the following to test:
+//                     href_src =
+// `
+// <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 120" width="300" height="120">
+//     <style>
+//     .btn { cursor: pointer; fill: #0066cc; }
+//     .btn:hover { fill: #004499; }
+//     text { fill: white; font-family: sans-serif; font-size: 14px; text-anchor: middle; }
+//     </style>
+
+//     <script type="text/javascript">
+//     <![CDATA[
+//         function consoleLog(msg) {
+//         console.log(msg);
+//         }
+//     ]]>
+//     </script>
+
+//     <a href="javascript:console.log('CLICK 1')">
+//     <rect class="btn" x="10" y="10" width="280" height="40" rx="6" />
+//     <text x="150" y="35">Click Me 1</text>
+//     </a>
+
+//     <a href="#" onclick="consoleLog('CLICK 2'); return false;">
+//     <rect class="btn" x="10" y="65" width="280" height="40" rx="6" />
+//     <text x="150" y="90">Click Me 2</text>
+//     </a>
+// </svg>
+// `;
                     debug(`SVG CLICK: ${href_src}`);
                 } else {
                     // absolute (already resolved against base)
@@ -3327,7 +3373,7 @@ function loaded(forced: boolean) {
                 payload.naturalWidthOf_HTMLImg_SVGImage = payload.naturalWidthOf_HTMLImg_SVGImage || undefined;
                 payload.naturalHeightOf_HTMLImg_SVGImage = payload.naturalHeightOf_HTMLImg_SVGImage || undefined;
                 if (!isSVGFragment && // isSVGImage or just HTML image
-                    !payload.naturalWidthOf_HTMLImg_SVGImage || !payload.naturalHeightOf_HTMLImg_SVGImage) {
+                    (!payload.naturalWidthOf_HTMLImg_SVGImage || !payload.naturalHeightOf_HTMLImg_SVGImage)) {
 
                     const imageObject = new Image();
                     imageObject.onload = function() {
@@ -3421,27 +3467,29 @@ function loaded(forced: boolean) {
             }).catch((_err) => { /* debug(err); */ });
     }, true);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ipcRenderer.on("R2_EVENT_IMAGE_CLICK", (_event: any, payload: IEventPayload_R2_EVENT_IMAGE_CLICK) => {
-        debug("R2_EVENT_IMAGE_CLICK (ipcRenderer.on) href: " + JSON.stringify(payload, null, 4));
-        // win.document.querySelectorAll(`img[data-${POPOUTIMAGE_CONTAINER_ID}]`);
-        // win.document.querySelectorAll(`image[data-${POPOUTIMAGE_CONTAINER_ID}]`);
-        // win.document.querySelectorAll(`svg[data-${POPOUTIMAGE_CONTAINER_ID}]`);
-        // const HTMLImg_SVGImage_SVGFragment = win.document.querySelector(`[data-${POPOUTIMAGE_CONTAINER_ID}]`);
-        const HTMLImg_SVGImage_SVGFragment = win.document.querySelector(payload.cssSelectorOf_HTMLImg_SVGImage_SVGFragment);
-        if (HTMLImg_SVGImage_SVGFragment) {
-            popoutImage(
-                win,
-                payload.cssSelectorOf_HTMLImg_SVGImage_SVGFragment,
-                HTMLImg_SVGImage_SVGFragment as HTMLImageElement | SVGElement,
-                payload.HTMLImgSrc_SVGImageHref_SVGFragmentMarkup,
-                payload.isSVGFragment,
-                payload.isSVGImage,
-                focusScrollRaw,
-                ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable,
-                ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
-        }
-    });
+    if (ENABLE_NAVIGATOR_R2_EVENT_IMAGE_CLICK) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ipcRenderer.on(R2_EVENT_IMAGE_CLICK, (_event: any, payload: IEventPayload_R2_EVENT_IMAGE_CLICK) => {
+            debug("R2_EVENT_IMAGE_CLICK (ipcRenderer.on) href: " + JSON.stringify(payload, null, 4));
+            // win.document.querySelectorAll(`img[data-${POPOUTIMAGE_CONTAINER_ID}]`);
+            // win.document.querySelectorAll(`image[data-${POPOUTIMAGE_CONTAINER_ID}]`);
+            // win.document.querySelectorAll(`svg[data-${POPOUTIMAGE_CONTAINER_ID}]`);
+            // const HTMLImg_SVGImage_SVGFragment = win.document.querySelector(`[data-${POPOUTIMAGE_CONTAINER_ID}]`);
+            const HTMLImg_SVGImage_SVGFragment = win.document.querySelector(payload.cssSelectorOf_HTMLImg_SVGImage_SVGFragment);
+            if (HTMLImg_SVGImage_SVGFragment) {
+                popoutImage(
+                    win,
+                    payload.cssSelectorOf_HTMLImg_SVGImage_SVGFragment,
+                    HTMLImg_SVGImage_SVGFragment as HTMLImageElement | SVGElement,
+                    payload.HTMLImgSrc_SVGImageHref_SVGFragmentMarkup,
+                    payload.isSVGFragment,
+                    payload.isSVGImage,
+                    focusScrollRaw,
+                    ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable,
+                    ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+            }
+        });
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ipcRenderer.on("R2_EVENT_WINDOW_RESIZE", (_event: any, zoomPercent: number) => {
@@ -3458,21 +3506,30 @@ function loaded(forced: boolean) {
             return;
         }
 
+        debug("configureFixedLayout...(R2_EVENT_WINDOW_RESIZE)", win.innerWidth, win.innerHeight);
         const wh = configureFixedLayout(win.document, win.READIUM2.isFixedLayout,
             win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight,
             win.innerWidth, win.innerHeight, win.READIUM2.webViewSlot,
             win.READIUM2.fxlZoomPercent);
 
-        if (wh) {
+        if (wh && win.READIUM2.isFixedLayout) { // win.READIUM2.isFixedLayout always true here
             win.READIUM2.fxlViewportWidth = wh.width;
             win.READIUM2.fxlViewportHeight = wh.height;
             win.READIUM2.fxlViewportScale = wh.scale;
+            win.READIUM2.fxlViewportTX = wh.tx;
+            win.READIUM2.fxlViewportTY = wh.ty;
 
             const payload: IEventPayload_R2_EVENT_FXL_CONFIGURE = {
                 fxl: wh,
             };
             ipcRenderer.sendToHost(R2_EVENT_FXL_CONFIGURE, payload);
         } else {
+            win.READIUM2.fxlViewportWidth = 0;
+            win.READIUM2.fxlViewportHeight = 0;
+            win.READIUM2.fxlViewportScale = 1;
+            win.READIUM2.fxlViewportTX = 0;
+            win.READIUM2.fxlViewportTY = 0;
+
             const payload: IEventPayload_R2_EVENT_FXL_CONFIGURE = {
                 fxl: null,
             };

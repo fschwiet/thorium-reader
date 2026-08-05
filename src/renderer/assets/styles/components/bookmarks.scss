@@ -16,13 +16,16 @@
   margin-top: 15px !important;
 }
 
+.bookmark_form_pop {
+    padding: 5px 10px;
+    border: 1px solid var(--color-gray-300);
+}
+
 .bookmark_form {
     background-color: var(--color-gray-50);
     border-radius: 6px;
-    // border: 1px solid var(--color-gray-300);
     display: flex;
     flex-direction: column;
-    // padding: 5px 10px;
     color: var(--color-text-primary);
 
     // gap: 10px;
@@ -284,6 +287,17 @@
       width: unset;
       border-radius: 6px;
       background-color: var(--color-neutral-base);
+
+        select {
+        appearance: auto;
+        font-size: 14px;
+        color: var(--color-text-primary);
+        height: 24px;
+        padding: 0 5px 0 20px;
+        vertical-align: middle;
+        width: 100%;
+        border: none;
+      }
     }
 
     input {

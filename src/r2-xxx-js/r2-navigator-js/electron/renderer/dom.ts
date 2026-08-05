@@ -27,6 +27,7 @@ import {
     R2_EVENT_PAGE_TURN_RES, R2_EVENT_READIUMCSS, R2_EVENT_SHOW, R2_EVENT_WEBVIEW_KEYDOWN,
     R2_EVENT_WEBVIEW_KEYUP,
     R2_EVENT_IMAGE_CLICK, IEventPayload_R2_EVENT_IMAGE_CLICK,
+    ENABLE_NAVIGATOR_R2_EVENT_IMAGE_CLICK,
 } from "../common/events";
 import { READIUM_CSS_URL_PATH } from "../common/readium-css-settings";
 import {
@@ -46,7 +47,7 @@ import {
 } from "./readaloud";
 import { adjustReadiumCssJsonMessageForFixedLayout, isFixedLayout, obtainReadiumCss } from "./readium-css";
 import { soundtrackHandleIpcMessage } from "./soundtrack";
-import { ReadiumElectronBrowserWindow, IReadiumElectronWebview } from "./webview/state";
+import { ReadiumElectronBrowserWindow, IReadiumElectronWebview, IReadiumElectronWebviewState } from "./webview/state";
 import { HighlightDrawTypeBackground } from "../common/highlight";
 
 const ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
@@ -243,9 +244,10 @@ export function fixedLayoutZoomPercent(zoomPercent: number) {
             debug("fixedLayoutZoomPercent ... setWebViewStyle");
 
             // win.READIUM2.domSlidingViewport
+            debug("DOM OPACITY ZERO 1 (fixedLayoutZoomPercent): ", win.READIUM2.domRootElement.style.opacity, win.READIUM2.opacityMaskCounter);
             win.READIUM2.domRootElement.style.opacity = "0";
             win.READIUM2.opacityMaskCounter++;
-            setWebViewStyle(activeWebView, wvSlot);
+            setWebViewStyle(activeWebView, wvSlot, undefined);
 
             _fixedLayoutZoomPercentTimers[activeWebView.id] = win.setTimeout(() => {
                 try {
@@ -255,6 +257,7 @@ export function fixedLayoutZoomPercent(zoomPercent: number) {
                     if (activeWebView.READIUM2?.DOMisReady) {
                         activeWebView.send("R2_EVENT_WINDOW_RESIZE", zoomPercent).then((_v) => { /* noop */ }).catch((_err) => { /* debug(err); */ });
                     } else {
+                        debug("DOM OPACITY ONE 1 (fixedLayoutZoomPercent timeout not ready): ", win.READIUM2.domRootElement.style.opacity, win.READIUM2.opacityMaskCounter);
                         if (win.READIUM2.opacityMaskCounter) {
                             win.READIUM2.opacityMaskCounter--;
                         }
@@ -290,9 +293,11 @@ export function setImageClickHandler(cb: (payload: IEventPayload_R2_EVENT_IMAGE_
     _imageClickHandler = cb;
 };
 
-function createWebViewInternal(preloadScriptPath: string): IReadiumElectronWebview {
+function createWebViewInternal(READIUM2: IReadiumElectronWebviewState, preloadScriptPath: string): IReadiumElectronWebview {
 
     const wv = document.createElement("webview");
+    (wv as IReadiumElectronWebview).READIUM2 = READIUM2;
+
     // https://github.com/electron/electron/blob/main/docs/tutorial/security.md
     //
     // https://www.electronjs.org/docs/latest/tutorial/sandbox
@@ -312,7 +317,7 @@ function createWebViewInternal(preloadScriptPath: string): IReadiumElectronWebvi
         wv.setAttribute("httpreferrer", publicationURL_);
     }
     debug("createWebViewInternal ... setWebViewStyle");
-    setWebViewStyle(wv as IReadiumElectronWebview, WebViewSlotEnum.center);
+    setWebViewStyle(wv as IReadiumElectronWebview, WebViewSlotEnum.center, null);
     wv.setAttribute("preload", preloadScriptPath); // "file://"
 
     // if (ENABLE_WEBVIEW_RESIZE) {
@@ -383,12 +388,16 @@ function createWebViewInternal(preloadScriptPath: string): IReadiumElectronWebvi
             webview.style.opacity = "1";
         } else if (event.channel === R2_EVENT_FXL_CONFIGURE) {
             const payload = event.args[0] as IEventPayload_R2_EVENT_FXL_CONFIGURE;
-            debug("R2_EVENT_FXL_CONFIGURE ... setWebViewStyle");
+            const wvSlot = webview.getAttribute("data-wv-slot") as WebViewSlotEnum;
+            debug("R2_EVENT_FXL_CONFIGURE ... setWebViewStyle", wvSlot, JSON.stringify(payload.fxl, null, 4));
             if (payload.fxl) {
-                setWebViewStyle(webview, WebViewSlotEnum.center, payload.fxl);
+                setWebViewStyle(webview, wvSlot ? wvSlot : WebViewSlotEnum.center, payload.fxl);
             } else {
+                // setWebViewStyle(webview, wvSlot ? wvSlot : WebViewSlotEnum.center, undefined);
                 setWebViewStyle(webview, WebViewSlotEnum.center, null);
             }
+
+            debug("DOM OPACITY ONE 2 (IPC R2_EVENT_FXL_CONFIGURE): ", win.READIUM2.domRootElement.style.opacity, win.READIUM2.opacityMaskCounter);
             if (!win.READIUM2.opacityMaskCounter || --win.READIUM2.opacityMaskCounter <= 0) {
                 win.READIUM2.domRootElement.style.opacity = "1";
             }
@@ -470,12 +479,14 @@ function createWebViewInternal(preloadScriptPath: string): IReadiumElectronWebvi
             }
             if (_imageClickHandler) {
                 debug("R2_EVENT_IMAGE_CLICK (ipc-message) href [_imageClickHandler]: " + JSON.stringify(payload, null, 4));
-                _imageClickHandler({...payload});
-            } else {
+                _imageClickHandler({ ...payload });
+            } else if (ENABLE_NAVIGATOR_R2_EVENT_IMAGE_CLICK) {
                 debug("R2_EVENT_IMAGE_CLICK (ipc-message) href [NOT _imageClickHandler => webview.send(R2_EVENT_IMAGE_CLICK]: " + JSON.stringify(payload, null, 4));
                 // webview === event.currentTarget as IReadiumElectronWebview
                 // webview === wv
-                webview.send(R2_EVENT_IMAGE_CLICK, {...payload}).then((_v) => { /* noop */ }).catch((_err) => { /* debug(err); */ });
+                webview.send(R2_EVENT_IMAGE_CLICK, { ...payload }).then((_v) => { /* noop */ }).catch((_err) => { /* debug(err); */ });
+            } else {
+                debug("R2_EVENT_IMAGE_CLICK (ipc-message) NO HANDLER?!: " + JSON.stringify(payload, null, 4));
             }
         } else if (!highlightsHandleIpcMessage(event.channel, event.args, webview) &&
             !ttsHandleIpcMessage(event.channel, event.args, webview) &&
@@ -540,26 +551,28 @@ function createWebView(second?: boolean) {
         if (_webview2) {
             destroyWebView(true);
         }
-        _webview2 = createWebViewInternal(preloadScriptPath);
-        _webview2.READIUM2 = {
+        const READIUM2: IReadiumElectronWebviewState = {
             id: 2,
             link: undefined,
             readiumCss: undefined,
             highlights: undefined,
         };
+        _webview2 = createWebViewInternal(READIUM2, preloadScriptPath);
+
         _webview2.setAttribute("id", "r2_webview2");
         domSlidingViewport.appendChild(_webview2 as Node);
     } else {
         if (_webview1) {
             destroyWebView(false);
         }
-        _webview1 = createWebViewInternal(preloadScriptPath);
-        _webview1.READIUM2 = {
+        const READIUM2: IReadiumElectronWebviewState = {
             id: 1,
             link: undefined,
             readiumCss: undefined,
             highlights: undefined,
         };
+        _webview1 = createWebViewInternal(READIUM2, preloadScriptPath);
+
         _webview1.setAttribute("id", "r2_webview1");
         domSlidingViewport.appendChild(_webview1 as Node);
     }
@@ -812,9 +825,10 @@ export function installNavigatorDOM(
                 const wvSlot = activeWebView.getAttribute("data-wv-slot") as WebViewSlotEnum;
                 if (wvSlot) {
                     debug("Window resize (TOP), IMMEDIATE ... setWebViewStyle");
+                    debug("DOM OPACITY ZERO 2 (Resize Observer): ", win.READIUM2.domRootElement.style.opacity, win.READIUM2.opacityMaskCounter);
                     win.READIUM2.domRootElement.style.opacity = "0";
                     win.READIUM2.opacityMaskCounter++;
-                    setWebViewStyle(activeWebView, wvSlot);
+                    setWebViewStyle(activeWebView, wvSlot, undefined);
                 }
             }
         }
@@ -837,6 +851,7 @@ export function installNavigatorDOM(
                         if (activeWebView.READIUM2?.DOMisReady) {
                             activeWebView.send("R2_EVENT_WINDOW_RESIZE", win.READIUM2.fixedLayoutZoomPercent).then((_v) => { /* noop */ }).catch((_err) => { /* debug(err); */ });
                         } else {
+                            debug("DOM OPACITY ONE 3 (Resize Observer timeout not ready): ", win.READIUM2.domRootElement.style.opacity, win.READIUM2.opacityMaskCounter);
                             if (win.READIUM2.opacityMaskCounter) {
                                 win.READIUM2.opacityMaskCounter--;
                             }

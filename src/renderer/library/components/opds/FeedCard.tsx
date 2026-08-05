@@ -112,7 +112,7 @@ export const FeedCard: React.FC<IFeedCardProps> = (props) => {
                 <div style={{ width: "100%", height: "50px", backgroundColor: "var(--color-gray-50", borderBottom: "1px solid var(--color-gray-300)", position: "absolute", top: "2px" }}>
                 </div>
                 <div className={stylesCatalogs.catalog_title}>
-                    <SVG ariaHidden svg={GlobeIcon} className={stylesCatalogs.catalog_globe_icon} />
+                    <SVG ariaHidden svg={GlobeIcon} />
                     <p title={`${feed.title} --- ${feed.url}`}>{feed.title}</p>
                 </div>
             </Link>
@@ -147,7 +147,7 @@ export const FeedCard: React.FC<IFeedCardProps> = (props) => {
 
 const FeedAuthentified = ({ feed, logout, loadFeeds, __ }: { feed: IOpdsFeedView, logout: (url: string) => void, loadFeeds: () => void, __: I18nFunction }) => {
     return (
-        <Popover.Root>
+        <Popover.Root modal>
             <Popover.Trigger asChild>
                 <button
                     className={stylesCatalogs.button_login}
@@ -177,7 +177,7 @@ const FeedAuthentified = ({ feed, logout, loadFeeds, __ }: { feed: IOpdsFeedView
 
 const FeedAuthentification = ({ feed, triggerAuth, __ }: { feed: IOpdsFeedView, triggerAuth: (feedUrl: string, authenticationUrl: string) => void, __: I18nFunction }) => {
     return (
-        <Popover.Root>
+        <Popover.Root modal>
             <Popover.Trigger asChild>
                 <button
                     className={stylesCatalogs.button_login}

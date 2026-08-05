@@ -759,6 +759,7 @@
         },
         "marks": {
             "annotations": "சிறுகுறிப்புகள்",
+            "annotationsReadium": "சிறுகுறிப்புகள் (Readium)",
             "bookmarks": "புக்மார்க்குகள்",
             "delete": "நீக்கு",
             "edit": "தொகு",
@@ -1211,6 +1212,10 @@
                 "ToggleReaderFullscreen": {
                     "description": "ரீடர் சாளரத்தில், கணினி முழுத் திரையை செயல்படுத்தவும் அல்லது சாதாரண சாளர பயன்முறையை மீட்டெடுக்கவும். இது பயனர் இடைமுகத்தை எளிதாக்கும் 'சென் பயன்முறை' இலிருந்து வேறுபட்டது என்பதை நினைவில் கொள்க",
                     "name": "மாற்று முழுத்திரை"
+                },
+                "ToggleReaderZenMode": {
+                    "description": "",
+                    "name": ""
                 },
                 "ToggleScreenReaderOptimize": {
                     "description": "",

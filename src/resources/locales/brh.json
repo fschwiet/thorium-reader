@@ -759,6 +759,7 @@
         },
         "marks": {
             "annotations": "",
+            "annotationsReadium": "",
             "bookmarks": "",
             "delete": "",
             "edit": "",
@@ -1209,6 +1210,10 @@
                     "name": ""
                 },
                 "ToggleReaderFullscreen": {
+                    "description": "",
+                    "name": ""
+                },
+                "ToggleReaderZenMode": {
                     "description": "",
                     "name": ""
                 },

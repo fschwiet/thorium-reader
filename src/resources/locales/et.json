@@ -759,6 +759,7 @@
         },
         "marks": {
             "annotations": "Märkmed",
+            "annotationsReadium": "Märkmed (Readium)",
             "bookmarks": "Järjehoidjad",
             "delete": "Kustuta",
             "edit": "Muuda",
@@ -1211,6 +1212,10 @@
                 "ToggleReaderFullscreen": {
                     "description": "",
                     "name": "Lülita täisekraanivaade sisse/välja"
+                },
+                "ToggleReaderZenMode": {
+                    "description": "",
+                    "name": ""
                 },
                 "ToggleScreenReaderOptimize": {
                     "description": "",

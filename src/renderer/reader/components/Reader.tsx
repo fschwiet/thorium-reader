@@ -338,6 +338,7 @@ class Reader extends React.Component<IProps, IState> {
         this.onKeyboardFocusMainDeep = this.onKeyboardFocusMainDeep.bind(this);
         this.onKeyboardFocusToolbar = this.onKeyboardFocusToolbar.bind(this);
         this.onKeyboardFullScreen = this.onKeyboardFullScreen.bind(this);
+        this.onKeyboardZenMode = this.onKeyboardZenMode.bind(this);
         this.onKeyboardInfo = this.onKeyboardInfo.bind(this);
         this.onKeyboardInfoWhereAmI = this.onKeyboardInfoWhereAmI.bind(this);
         this.onKeyboardInfoWhereAmISpeak = this.onKeyboardInfoWhereAmISpeak.bind(this);
@@ -443,7 +444,6 @@ class Reader extends React.Component<IProps, IState> {
         // this.handleSettingsClick = this.handleSettingsClick.bind(this);
         this.handleFullscreenClick = this.handleFullscreenClick.bind(this);
         this.handleReaderClose = this.handleReaderClose.bind(this);
-        this.handleReaderDetach = this.handleReaderDetach.bind(this);
         this.handleReadingLocationChange = this.handleReadingLocationChange.bind(this);
         this.goToLocator = this.goToLocator.bind(this);
         this.goToPdfAnnotation = this.goToPdfAnnotation.bind(this);
@@ -1177,9 +1177,7 @@ class Reader extends React.Component<IProps, IState> {
                         // handleMenuClick={this.handleMenuButtonClick}
                         // handleSettingsClick={this.handleSettingsClick}
                         fullscreen={this.state.fullscreen}
-                        mode={this.props.readerMode}
                         // handleFullscreenClick={this.handleFullscreenClick}
-                        handleReaderDetach={this.handleReaderDetach}
                         handleReaderClose={this.handleReaderClose}
                         isOnSearch={this.props.searchEnable}
                         ReaderSettingsProps={ReaderSettingsProps}
@@ -1259,7 +1257,9 @@ class Reader extends React.Component<IProps, IState> {
                                         : "")}
                                     ref={this.mainElRef}
                                     style={{
-                                        inset: this.state.currentLocation?.docInfo?.isVerticalWritingMode || isAudioBook || !this.props.readerConfig.paged || this.props.isPdf || this.props.isDivina || this.isFixedLayout() ? "0" : "75px 50px",
+                                        // left: this.props.readerConfig.readerDockingMode === "left" && this.isFixedLayout() ? "372px" : undefined,
+                                        // right: this.props.readerConfig.readerDockingMode === "right" && this.isFixedLayout() ? "373px" : undefined,
+                                        inset: this.state.currentLocation?.docInfo?.isVerticalWritingMode || isAudioBook || !this.props.readerConfig.paged || this.props.isPdf || this.props.isDivina ? "0" : this.isFixedLayout() ? "0px 50px" : "75px 50px",
                                         // opacity: this.state.blackoutMask ? 0 : 1,
                                     }}>
                                 </div>
@@ -1297,7 +1297,7 @@ class Reader extends React.Component<IProps, IState> {
                                         }}
                                             title={isRTL ? this.props.__("reader.navigation.screenPrevious") : this.props.__("reader.navigation.screenNext")}
                                             className={(this.props.settingsOpen || this.props.menuOpen) ? (this.props.readerConfig.readerDockingMode === "right" ? stylesReaderFooter.navigation_arrow_docked_right :  stylesReaderFooter.navigation_arrow_right) : stylesReaderFooter.navigation_arrow_right}
-                                            style={{ right: !this.props.readerConfig.paged ? "15px" : "4px" }}
+                                            style={{ right: !this.props.readerConfig.paged ? ((this.props.settingsOpen || this.props.menuOpen) && this.props.readerConfig.readerDockingMode === "right" ? "384px" : "15px") : ((this.props.settingsOpen || this.props.menuOpen) && this.props.readerConfig.readerDockingMode === "right" ? "373px" : "4px") }}
                                         >
                                             <SVG ariaHidden={true} svg={ArrowRightIcon} aria-label={this.props.__("reader.svg.right")}/>
                                         </button>
@@ -1482,6 +1482,10 @@ class Reader extends React.Component<IProps, IState> {
             true, // listen for key up (not key down)
             this.props.keyboardShortcuts.ToggleReaderFullscreen,
             this.onKeyboardFullScreen);
+        registerKeyboardListener(
+            true, // listen for key up (not key down)
+            this.props.keyboardShortcuts.ToggleReaderZenMode,
+            this.onKeyboardZenMode);
 
         registerKeyboardListener(
             true, // listen for key up (not key down)
@@ -1605,6 +1609,7 @@ class Reader extends React.Component<IProps, IState> {
         unregisterKeyboardListener(this.onKeyboardFocusMainDeep);
         unregisterKeyboardListener(this.onKeyboardFocusToolbar);
         unregisterKeyboardListener(this.onKeyboardFullScreen);
+        unregisterKeyboardListener(this.onKeyboardZenMode);
         unregisterKeyboardListener(this.onKeyboardInfo);
         unregisterKeyboardListener(this.onKeyboardInfoWhereAmI);
         unregisterKeyboardListener(this.onKeyboardInfoWhereAmISpeak);
@@ -2019,6 +2024,11 @@ class Reader extends React.Component<IProps, IState> {
         // HACK ALERT: simulate window resize to trigger navigator 100ms timeout debouncer
         // window.dispatchEvent(document.createEvent("resize")); // CRASH
         // window.dispatchEvent(new Event("resize")); // WORKS
+    };
+
+    private onKeyboardZenMode = () => {
+
+        this.setZenModeAndFXLZoom(!this.state.zenMode, this.state.fxlZoomPercent);
     };
 
     private onKeyboardCloseReader = () => {
@@ -3300,10 +3310,6 @@ class Reader extends React.Component<IProps, IState> {
         this.props.closeReader();
     }
 
-    private handleReaderDetach() {
-        this.props.detachReader();
-    }
-
     private handleFullscreenClick() {
         this.props.toggleFullscreen(!this.state.fullscreen);
         this.setState({ fullscreen: !this.state.fullscreen });
@@ -3657,7 +3663,6 @@ const mapStateToProps = (state: IReaderRootState, _props: IBaseProps) => {
         searchEnable: state.search.enable,
         manifestUrlR2Protocol: manifestUrlR2Protocol_pub_id_not_path,
         winId: state.win.identifier,
-        readerMode: state.mode,
         divinaReadingMode: state.reader.divina.readingMode,
         locale: state.i18n.locale,
         disableRTLFlip: !!state.reader.disableRTLFlip?.disabled,
@@ -3705,10 +3710,6 @@ const mapDispatchToProps = (dispatch: TDispatch, _props: IBaseProps) => {
         closeReader: () => {
             dispatch(readerActions.closeRequest.build());
         },
-        detachReader: () => {
-            dispatch(readerActions.detachModeRequest.build());
-        },
-
         displayPublicationInfo: (pubId: string, pdfPlayerNumberOfPages: number | undefined, divinaNumberOfPages: number | undefined, divinaContinousEqualTrue: boolean, readerReadingLocation: MiniLocatorExtended | undefined, handleLinkUrl: ((url: string) => void) | undefined, focusWhereAmI?: boolean) => {
             dispatch(dialogActions.openRequest.build(DialogTypeName.PublicationInfoReader,
                 {

@@ -109,7 +109,7 @@ export const AdvancedTrigger = () => {
     };
 
     return (
-        <Popover.Root>
+        <Popover.Root modal>
             <Popover.Trigger asChild>
                 <button>
                     <SVG
@@ -480,6 +480,10 @@ class KeyboardSettings extends React.Component<IProps, IState> {
             ToggleReaderFullscreen: {
                 name: `${__("settings.keyboard.list.ToggleReaderFullscreen.name")}`,
                 description: `${__("settings.keyboard.list.ToggleReaderFullscreen.description")}`,
+            },
+            ToggleReaderZenMode: {
+                name: `${__("settings.keyboard.list.ToggleReaderZenMode.name")}`,
+                description: `${__("settings.keyboard.list.ToggleReaderZenMode.description")}`,
             },
             ToggleScreenReaderOptimize: {
                 name: `${__("settings.keyboard.list.ToggleScreenReaderOptimize.name")}`,

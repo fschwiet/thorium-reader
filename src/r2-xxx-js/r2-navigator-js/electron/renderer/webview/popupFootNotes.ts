@@ -10,7 +10,7 @@ import * as path from "path";
 import {
     CSS_CLASS_NO_FOCUS_OUTLINE, FOOTNOTES_CONTAINER_CLASS, ROOT_CLASS_NO_FOOTNOTES,
 } from "../../common/styles";
-import { PopupDialog } from "../common/popup-dialog";
+import { PopupDialog } from "./popup-dialog";
 
 import { removeUTF8BOM } from "@r2-utils-js/_utils/bom";
 
@@ -177,7 +177,7 @@ export async function popupFootNote(
         htmltxt = htmltxt.replace(/xmlns:epub=["']http:\/\/www.idpf.org\/2007\/ops["']/g, " ");
     }
     // htmltxt = htmltxt.replace(/epub:type=["'][^"']+["']/g, " ");
-    htmltxt = htmltxt.replace(/<script>.+<\/script>/g, " ");
+    htmltxt = htmltxt.replace(/<script>.+<\/script>/gi, " ");
 
     const ID_PREFIX_ = "r2-footnote-for_";
     const id_ = ID_PREFIX_ + targetElement.id;

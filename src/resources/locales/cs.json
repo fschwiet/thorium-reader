@@ -769,6 +769,7 @@
         },
         "marks": {
             "annotations": "Anotace",
+            "annotationsReadium": "Anotace (Readium)",
             "bookmarks": "Záložky",
             "delete": "Odstranit",
             "edit": "Upravit",
@@ -1221,6 +1222,10 @@
                     "name": ""
                 },
                 "ToggleReaderFullscreen": {
+                    "description": "",
+                    "name": ""
+                },
+                "ToggleReaderZenMode": {
                     "description": "",
                     "name": ""
                 },

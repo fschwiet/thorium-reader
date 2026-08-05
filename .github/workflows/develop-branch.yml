@@ -4,6 +4,11 @@ on:
     branches: [ develop ]
     tags-ignore:
       - '*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
 # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
 permissions:
@@ -57,10 +62,10 @@ jobs:
 # Thorium for Linux x64 and arm64 is built on GitHub Actions x64 runners
 # Thorium for Windows x64 and arm64 is built on GitHub Actions x64 runners
 # To ensure arm64, the trick is:
-#       npm ci --ignore-scripts --foreground-scripts --min-release-age=3 --allow-git=root --cpu=arm64
+#       npm ci --ignore-scripts --foreground-scripts --allow-git=root --cpu=arm64
 #       Replace "x64" with "arm64" in `package.json` (and optionally the electron-builder `src/package.json`, if needed)
 # To ensure x64, the trick is:
-#       npm ci --ignore-scripts --foreground-scripts --min-release-age=3 --allow-git=root --cpu=x64
+#       npm ci --ignore-scripts --foreground-scripts --allow-git=root --cpu=x64
 #       `package.json` already specifies "x64"
 # windows-latest is currently windows-2022, but becomes windows-2025 in September 2025 (windows-2022 remains supported for 3 years)
 #       https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
@@ -193,10 +198,10 @@ jobs:
       run: uname -m && arch
 ###########################
     - name: Checkout
-# https://github.com/actions/checkout/commits/v6.0.2
-# https://github.com/actions/checkout/commits/de0fac2e4500dabe0009e67214ff5f5447ce83dd
-# https://github.com/actions/checkout/compare/v6.0.2...de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+# https://github.com/actions/checkout/commits/v7.0.1
+# https://github.com/actions/checkout/commits/3d3c42e5aac5ba805825da76410c181273ba90b1
+# https://github.com/actions/checkout/compare/v7.0.1...3d3c42e5aac5ba805825da76410c181273ba90b1
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         persist-credentials: false
     # - name: Git config global dump (pre)
@@ -228,10 +233,10 @@ jobs:
 #      run: 'git config --list || echo NO_GIT_GLOBAL_CONFIG || true'
 #      shell: bash
 ###########################
-# https://github.com/actions/setup-node/commits/v6.4.0
-# https://github.com/actions/setup-node/commits/48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
-# https://github.com/actions/setup-node/compare/v6.4.0...48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
-    - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+# https://github.com/actions/setup-node/commits/v7.0.0
+# https://github.com/actions/setup-node/commits/820762786026740c76f36085b0efc47a31fe5020
+# https://github.com/actions/setup-node/compare/v7.0.0...820762786026740c76f36085b0efc47a31fe5020
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
       with:
         node-version: '24'
         cache: ''
@@ -288,7 +293,7 @@ jobs:
       if: endsWith(matrix.osarch, '-arm')
       #(ls -alsR ~/.cache/electron/ || ls -alsR ~/Library/Caches/electron/ || ls -alsR ~/AppData/Local/electron/Cache/ || echo OK)
       run: >
-        npm ci --ignore-scripts --foreground-scripts --min-release-age=3 --allow-git=root --cpu=arm64 &&
+        npm ci --ignore-scripts --foreground-scripts --allow-git=root --cpu=arm64 &&
         cd node_modules/electron &&
         DEBUG=@electron/get* force_no_cache=true npm_config_arch=arm64 ELECTRON_INSTALL_ARCH=arm64 node install.js --cpu=arm64 &&
         cd -
@@ -300,7 +305,7 @@ jobs:
       if: endsWith(matrix.osarch, '-intel')
       #(ls -alsR ~/.cache/electron/ || ls -alsR ~/Library/Caches/electron/ || ls -alsR ~/AppData/Local/electron/Cache/ || echo OK)
       run: >
-        npm ci --ignore-scripts --foreground-scripts --min-release-age=3 --allow-git=root --cpu=x64 &&
+        npm ci --ignore-scripts --foreground-scripts --allow-git=root --cpu=x64 &&
         cd node_modules/electron &&
         DEBUG=@electron/get* force_no_cache=true npm_config_arch=x64 ELECTRON_INSTALL_ARCH=x64 node install.js --cpu=x64 &&
         cd -
@@ -467,6 +472,7 @@ jobs:
 ###########################
   release_job:
     needs: build_job
+    timeout-minutes: 20
     permissions:
       actions: none
       artifact-metadata: none
@@ -518,15 +524,13 @@ jobs:
             runson: ubuntu-latest # ubuntu-22.04 #ubuntu-latest is ubuntu-24.04
             packname: linux
             release_tag: latest-linux-arm
-#    env:
-#      RELEASE_TAG: ${{ matrix.release_tag }} # ONLY NEEDED in scripts/release-github.mjs
     steps:
 ###########################
     - name: Checkout
-# https://github.com/actions/checkout/commits/v6.0.2
-# https://github.com/actions/checkout/commits/de0fac2e4500dabe0009e67214ff5f5447ce83dd
-# https://github.com/actions/checkout/compare/v6.0.2...de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+# https://github.com/actions/checkout/commits/v7.0.1
+# https://github.com/actions/checkout/commits/3d3c42e5aac5ba805825da76410c181273ba90b1
+# https://github.com/actions/checkout/compare/v7.0.1...3d3c42e5aac5ba805825da76410c181273ba90b1
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         persist-credentials: false
 ###########################
@@ -541,10 +545,10 @@ jobs:
 #        merge-multiple: true
         path: release
 ###########################
-# https://github.com/actions/setup-node/commits/v6.4.0
-# https://github.com/actions/setup-node/commits/48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
-# https://github.com/actions/setup-node/compare/v6.4.0...48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
-#    - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+# https://github.com/actions/setup-node/commits/v7.0.0
+# https://github.com/actions/setup-node/commits/820762786026740c76f36085b0efc47a31fe5020
+# https://github.com/actions/setup-node/compare/v7.0.0...820762786026740c76f36085b0efc47a31fe5020
+#    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
 #      with:
 #        node-version: '24'
 #        cache: ''
@@ -557,12 +561,8 @@ jobs:
 ###########################
 #    - run: npm --version
 ###########################
-#    - run: npm --global install @octokit/rest
-###########################
     - name: GitHub Tagged Release Delete/ReCreate and Upload Build Artefacts
       env:
-#GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#run: ls -alsR release ; node scripts/release-github.mjs
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: >
         ls -alsR release ;

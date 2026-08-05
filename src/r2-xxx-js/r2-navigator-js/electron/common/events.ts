@@ -15,6 +15,8 @@ import { IPaginationInfo } from "./pagination";
 import { IReadiumCSS } from "./readium-css-settings";
 import { IRangeInfo, ISelectionInfo } from "./selection";
 
+export const ENABLE_NAVIGATOR_R2_EVENT_IMAGE_CLICK = false;
+
 // in WEBVIEW: ipcRenderer.sendToHost()
 // in RENDERER: webview.addEventListener("ipc-message")
 //
@@ -60,8 +62,8 @@ export const R2_EVENT_READIUMCSS = "R2_EVENT_READIUMCSS";
 export interface IEventPayload_R2_EVENT_READIUMCSS {
     setCSS: IReadiumCSS | undefined;
     isFixedLayout?: boolean;
-    fixedLayoutWebViewWidth?: number;
-    fixedLayoutWebViewHeight?: number;
+    fixedLayoutAvailableWebViewWidth?: number;
+    fixedLayoutAvailableWebViewHeight?: number;
     fixedLayoutZoomPercent?: number;
     urlRoot?: string;
 }
